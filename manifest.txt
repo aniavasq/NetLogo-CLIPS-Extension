@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Extension-Name: clips
+Class-Manager: ClipsExtension
+NetLogo-Extension-API-Version: 6.1
+Class-Path: lib/CLIPSJNI.jar
