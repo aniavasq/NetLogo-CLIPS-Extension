@@ -7,7 +7,9 @@ import org.nlogo.api.Command;
 import org.nlogo.api.Context;
 import org.nlogo.api.ExtensionException;
 import org.nlogo.api.LogoException;
+import org.nlogo.api.LogoListBuilder;
 import org.nlogo.api.Reporter;
+import org.nlogo.core.LogoList;
 import org.nlogo.core.Syntax;
 import org.nlogo.core.SyntaxJ;
 
@@ -298,7 +300,10 @@ public class Clips {
     }    
   }
 
-  public static class FinFact extends ClipsReporter<String> {
+  /**
+   * FindFact
+   */
+  public static class FindFact extends ClipsReporter<String> {
     @Override
     public Syntax getSyntax() {
       return SyntaxJ.reporterSyntax(new int[] { Syntax.StringType(), Syntax.StringType(), Syntax.StringType(), Syntax.StringType() |  Syntax.RepeatableType(), Syntax.StringType(), Syntax.StringType() |  Syntax.RepeatableType() }, Syntax.StringType(), 3, 3);
@@ -319,16 +324,13 @@ public class Clips {
         @Override
         public String getMethod(String envId, Argument[] args) throws CLIPSException, ExtensionException {
           String deftemplate = args[1].getString();
-      
           String variable;
           String condition;
-
           FactAddressValue fv;
 
           try {
             variable = args[2].getString();
             condition = args[3].getString();
-
             fv = getFactAddressValue(envId, variable, deftemplate, condition);
           } catch (Exception e) {
             fv = getFactAddressValue(envId, deftemplate);
@@ -346,7 +348,7 @@ public class Clips {
   /**
    * GetSlotValue
    */
-  public static class GetSlotValue extends FinFact {
+  public static class GetSlotValue extends FindFact {
     
     @Override
     public ClipsMethod<String> getClipsMethod() {
@@ -364,7 +366,6 @@ public class Clips {
           try {
             variable = args[3].getString();
             condition = args[4].getString();
-
             fv = getFactAddressValue(envId, variable, deftemplate, condition);
           } catch (Exception e) {
             fv = getFactAddressValue(envId, deftemplate);
@@ -380,6 +381,114 @@ public class Clips {
     }
   }
 
+  /**
+   * FindAllFact
+   */
+  public static class FindAllFacts extends ClipsReporter<LogoList> {
+    @Override
+    public Syntax getSyntax() {
+      return SyntaxJ.reporterSyntax(new int[] { Syntax.StringType(), Syntax.StringType(), Syntax.StringType(), Syntax.StringType() |  Syntax.RepeatableType(), Syntax.StringType(), Syntax.StringType() |  Syntax.RepeatableType() }, Syntax.ListType(), 3, 3);
+    }
+
+    public List<FactAddressValue> getFacts(String envId, String deftemplate) throws CLIPSException {
+      return Clips.findAllFacts(envId, deftemplate);
+    }
+
+    public List<FactAddressValue> getFacts(String envId, String deftemplate, String variable, String condition) throws CLIPSException {
+      return Clips.findAllFacts(envId, variable, deftemplate, condition);
+    }
+
+    @Override
+    public ClipsMethod<LogoList> getClipsMethod() {
+      return new ClipsMethod<LogoList>() {
+
+        @Override
+        public LogoList getMethod(String envId, Argument[] args) throws CLIPSException, ExtensionException {
+          String deftemplate = args[1].getString();
+          String variable;
+          String condition;
+          LogoListBuilder list = new LogoListBuilder();
+
+          try {
+            variable = args[2].getString();
+            condition = args[3].getString();
+            list.addAll(getFacts(envId, variable, deftemplate, condition));
+          } catch (Exception e) {
+            list.addAll(getFacts(envId, deftemplate));
+          }
+
+          try {
+            return list.toLogoList();
+          } catch (NullPointerException e) {
+            list.add("FALSE");
+            return list.toLogoList();
+          }
+        }
+      };
+    }
+  }
+
+  /**
+   * GetAllSlotValues
+   */
+  public static class GetAllSlotValues extends FindAllFacts {
+    @Override
+    public ClipsMethod<LogoList> getClipsMethod() {
+      return new ClipsMethod<LogoList>() {
+
+        @Override
+        public LogoList getMethod(String envId, Argument[] args) throws CLIPSException, ExtensionException {
+          String deftemplate = args[1].getString();
+          String slotName = args[2].getString();
+          String variable;
+          String condition;
+          LogoListBuilder list = new LogoListBuilder();
+          List<FactAddressValue> fvs;
+
+          try {
+            variable = args[3].getString();
+            condition = args[4].getString();
+            fvs = getFacts(envId, variable, deftemplate, condition);
+          } catch (Exception e) {
+            fvs = getFacts(envId, deftemplate);
+          }
+
+          for(FactAddressValue fv:fvs) {
+            list.add(fv.getSlotValue(slotName) + "");
+          }
+
+          try {
+            return list.toLogoList();
+          } catch (NullPointerException e) {
+            list.add("FALSE");
+            return list.toLogoList();
+          }
+        }
+      };
+    }
+  }
+
+  /**
+   * Eval
+   */
+  public static class Eval extends ClipsReporter<String> {
+    @Override
+    public Syntax getSyntax() {
+      return SyntaxJ.reporterSyntax(new int[] { Syntax.StringType(), Syntax.StringType() }, Syntax.StringType());
+    }
+
+    @Override
+    public ClipsMethod<String> getClipsMethod() {
+      return new ClipsMethod<String>() {
+
+        @Override
+        public String getMethod(String envId, Argument[] args) throws CLIPSException, ExtensionException {
+          String evalString = args[1].getString();
+          return Clips.eval(envId, evalString).toString();
+        }
+      };
+    }
+  }
 
   private static HashMap<String, Environment> environments = new HashMap<>();
 
@@ -392,11 +501,11 @@ public class Clips {
   }
 
   public static Environment getEnv(String envId) throws CLIPSException {
-    Environment env =  environments.get(envId);
+    Environment env = environments.get(envId);
     if (env != null) {
       return env;
     } else {
-      throw new CLIPSException("Environment < " + envId + " > does not exist.");
+      throw new CLIPSException("Environment <" + envId + "> does not exist.");
     }
   }
 
@@ -462,7 +571,8 @@ public class Clips {
     return clips.makeInstance(instanceStr);
   }
 
-  public static FactAddressValue findFact(String envId, String variable, String deftemplate, String condition) throws CLIPSException {
+  public static FactAddressValue findFact(String envId, String variable, String deftemplate, String condition)
+      throws CLIPSException {
     Environment clips = getEnv(envId);
     return clips.findFact(variable, deftemplate, condition);
   }
@@ -472,7 +582,8 @@ public class Clips {
     return clips.findFact(deftemplate);
   }
 
-  public static List<FactAddressValue> findAllFacts(String envId, String variable, String deftemplate, String condition) throws CLIPSException {
+  public static List<FactAddressValue> findAllFacts(String envId, String variable, String deftemplate, String condition)
+      throws CLIPSException {
     Environment clips = getEnv(envId);
     return clips.findAllFacts(variable, deftemplate, condition);
   }
@@ -480,5 +591,32 @@ public class Clips {
   public static List<FactAddressValue> findAllFacts(String envId, String deftemplate) throws CLIPSException {
     Environment clips = getEnv(envId);
     return clips.findAllFacts(deftemplate);
+  }
+
+  public static InstanceAddressValue findInstance(String envId, String defclass) throws CLIPSException {
+    Environment clips = getEnv(envId);
+    return clips.findInstance(defclass);
+  }
+
+  public static InstanceAddressValue findInstance(String envId, String variable, String defclass, String condition)
+      throws CLIPSException {
+    Environment clips = getEnv(envId);
+    return clips.findInstance(variable, defclass, condition);
+  }
+
+  public static List<InstanceAddressValue> findAllInstance(String envId, String defclass) throws CLIPSException {
+    Environment clips = getEnv(envId);
+    return clips.findAllInstances(defclass);
+  }
+
+  public static List<InstanceAddressValue> findAllInstance(String envId, String variable, String defclass, String condition)
+      throws CLIPSException {
+    Environment clips = getEnv(envId);
+    return clips.findAllInstances(variable, defclass, condition);
+  }
+
+  public static PrimitiveValue eval(String envId, String evalString) throws CLIPSException {
+    Environment clips = getEnv(envId);
+    return clips.eval(evalString);
   }
 }
