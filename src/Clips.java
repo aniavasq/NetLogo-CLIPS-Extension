@@ -306,14 +306,14 @@ public class Clips {
   public static class FindFact extends ClipsReporter<String> {
     @Override
     public Syntax getSyntax() {
-      return SyntaxJ.reporterSyntax(new int[] { Syntax.StringType(), Syntax.StringType(), Syntax.StringType(), Syntax.StringType() |  Syntax.RepeatableType(), Syntax.StringType(), Syntax.StringType() |  Syntax.RepeatableType() }, Syntax.StringType(), 3, 3);
+      return SyntaxJ.reporterSyntax(new int[] { Syntax.StringType(), Syntax.StringType(), Syntax.StringType() |  Syntax.RepeatableType(), Syntax.StringType(), Syntax.StringType() |  Syntax.RepeatableType() }, Syntax.StringType(), 2, 2);
     }
 
     public FactAddressValue getFactAddressValue(String envId, String deftemplate) throws CLIPSException {
       return Clips.findFact(envId, deftemplate);
     }
 
-    public FactAddressValue getFactAddressValue(String envId, String deftemplate, String variable, String condition) throws CLIPSException {
+    public FactAddressValue getFactAddressValue(String envId, String variable, String deftemplate, String condition) throws CLIPSException {
       return Clips.findFact(envId, variable, deftemplate, condition);
     }
 
@@ -349,6 +349,11 @@ public class Clips {
    * GetSlotValue
    */
   public static class GetSlotValue extends FindFact {
+
+    @Override
+    public Syntax getSyntax() {
+      return SyntaxJ.reporterSyntax(new int[] { Syntax.StringType(), Syntax.StringType(), Syntax.StringType(), Syntax.StringType() |  Syntax.RepeatableType(), Syntax.StringType(), Syntax.StringType() |  Syntax.RepeatableType() }, Syntax.StringType(), 3, 3);
+    }
     
     @Override
     public ClipsMethod<String> getClipsMethod() {
@@ -358,8 +363,8 @@ public class Clips {
         public String getMethod(String envId, Argument[] args) throws CLIPSException, ExtensionException {
           String deftemplate = args[1].getString();
           String slotName = args[2].getString();
-          String variable;
-          String condition;
+          String variable = "";
+          String condition = "";
 
           FactAddressValue fv;
 
@@ -394,7 +399,7 @@ public class Clips {
       return Clips.findAllFacts(envId, deftemplate);
     }
 
-    public List<FactAddressValue> getFacts(String envId, String deftemplate, String variable, String condition) throws CLIPSException {
+    public List<FactAddressValue> getFacts(String envId, String variable, String deftemplate, String condition) throws CLIPSException {
       return Clips.findAllFacts(envId, variable, deftemplate, condition);
     }
 

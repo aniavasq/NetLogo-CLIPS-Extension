@@ -9,6 +9,7 @@ public class ClipsExtension extends DefaultClassManager {
     primitiveManager.addPrimitive("clear", new Clips.Clear());
     primitiveManager.addPrimitive("destroy", new Clips.Destroy());
     primitiveManager.addPrimitive("assert-string", new Clips.AssertString());
+    primitiveManager.addPrimitive("find-fact", new Clips.FindFact());
     primitiveManager.addPrimitive("get-slot-value", new Clips.GetSlotValue());
     primitiveManager.addPrimitive("eval", new Clips.Eval());
   }
