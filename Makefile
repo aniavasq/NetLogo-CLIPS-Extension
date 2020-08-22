@@ -3,7 +3,7 @@ ifeq ($(origin JAVA_HOME), undefined)
 endif
 
 ifeq ($(origin NETLOGO), undefined)
-  NETLOGO=/Applications/NetLogo 6.1.1/Java # Mac Directory
+  NETLOGO=/Applications/NetLogo 6.1.1/Java# Mac Directory
 endif
 
 ifeq ($(origin JARSPATH), undefined)
