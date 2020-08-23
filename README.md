@@ -4,7 +4,7 @@ This package contains the NetLogo CLIPS extension. This allows you to run CLIPS 
 
 ## Building
 
-It's required to have installed JDK7 or a newer version in order to build the extension. Also, Git is required.
+It's required to have installed JDK7 or a newer version in order to build the extension. Also, Git and Make are required.
 
 1. Clone the NetLogo CLIPS extension repository
 
@@ -154,7 +154,7 @@ observer: "<Fact-2>"
 ### `clips:get-slot-value`
 
 ```
-clips:get-sslot-value <environment-name> <fact-set-template> <slot-name> [<variable>] [<condition>]
+clips:get-slot-value <environment-name> <fact-set-template> <slot-name> [<variable>] [<condition>]
 ```
 
 Returns the value of the specified slot from the specified fact. It takes as parameters: the string that represents the environment name, the fact set template name, the slot name from the template; and as optional paratemers: the variable name that will be used in the query condition and the query condition itself.
@@ -183,7 +183,7 @@ observer: "TRUE"
 clips:clear <environment-name>
 ```
 
-Clears a CLIPS. Removes all constructs and all associated data structures (such as facts and instances) from the CLIPS environment.
+Clears a CLIPS environment. Removes all constructs and all associated data structures (such as facts and instances) from the CLIPS environment.
 
 ```
 observer> clips:clear "env"
