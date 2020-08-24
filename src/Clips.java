@@ -16,19 +16,41 @@ import org.nlogo.core.SyntaxJ;
 import net.sf.clipsrules.jni.*;
 
 /**
- * Clips
+ * Esta es la clase que funciona como fachada para poder usar las funciones y
+ * procedimientos de la interfaz nativa de Java de CLIPS (CLIPS JNI). CLIPS JNI
+ * es la interfaz para poder usar la funcionalidad de CLIPS para desarrollar
+ * aplicaciones de Java.
+ * 
+ * @author Aníbal Vásquez C.
+ * @version %I %G
  */
 public class Clips {
 
   /**
-   * ClipsMethod
+   * Esta interfaz de Java permite implementar métodos en el JNI de CLIPS.
+   * @param <T> Objeto que debe representar el tipo de dato primitivo del método.
    */
   public interface ClipsMethod<T> {
+    /**
+     * Implementación del uso de una función o procedimiento de CLIPS que se
+     * invoca mediante un método del JNI.
+     * 
+     * @param envId Id. del entorno de CLIPS que debe ejecutar el método.
+     * @param args Lista de argumentos usados por la función o procedimiento
+     * que implementa el método del JNI de CLIPS.
+     * @return puede retornar o no el valor de la función o procedimiento de
+     * CLIPS.
+     * @throws CLIPSException
+     * @throws ExtensionException
+     */
     public T getMethod(String envId, Argument[] args) throws CLIPSException, ExtensionException;
   }
 
   /**
-   * ClipsCommandReporter
+   * Clase interna que permite definir un <i>reporter</i> o <i>command</i> de
+   * NetLogo de tipo T.
+   * @param <T> T es la representación del tipo de dato primitivo que podrá
+   * soportar el <i>reporter</i> o <i>command</i>.
    */
   public static class ClipsCommandReporter<T> {
 
@@ -36,41 +58,90 @@ public class Clips {
     ClipsMethod<T> clipsMethod;
     Context context;
 
+    /**
+     * Setter que configura la sintaxis del <i>reporter</i> o <i>command</i>.
+     * @param syntax Estructura de datos que representa la sintaxis.
+     */
     public void setSyntax(Syntax syntax) {
       this.syntax = syntax;
     }
 
+    /**
+     * Setter que configura el método del Entorno de CLIPS vinculado.
+     * @param clipsMethod
+     */
     public void setClipsMethod(ClipsMethod<T> clipsMethod) {
       this.clipsMethod = clipsMethod;
     }
 
+    /**
+     * Getter que permite obtener el método del entorno de CLIPS vinculado.
+     * @return El entorno método de CLIPS vinculado al <i>reporter</i> o 
+     * <i>command</i>.
+     */
     public ClipsMethod<T> getClipsMethod() {
       return this.clipsMethod;
     }
 
+    /**
+     * Getter que retorna el id. del entorno vinculado al método de CLIPS
+     * implementado.
+     * 
+     * @param args Lista de argumentos para poder obtener el id del entorno de CLIPS.
+     * @return Id. del Entorno de CLIPS.
+     * @throws LogoException
+     * @throws ExtensionException
+     */
     public String getEnvId(Argument[] args) throws LogoException, ExtensionException {
       return args[0].getString();
     }
 
+    /**
+     * Setter que establece el contexto de NetLogo para ser usado.
+     * @param context Contexto del proceso de NetLogo.
+     */
     public void setContext(Context context) {
       this.context = context;
     }
 
+    /**
+     * Getter del contexto del proceso de NetLogo vinculado a un método de CLIPS.
+     * @return El contexto del proceso de NetLogo.
+     */
     public Context getContext() {
       return this.context;
     }
   }
 
   /**
-   * ClipsCommand
+   * Clase interna para definir un <i>command<i> de NetLogo de tipo <b>T</b>.
+   * La mayor diferencia entre un <i>command</i> y un <i>reporter</i> es que el
+   * <i>command</i> no retorna un valor.
+   * 
+   * @param <T> T es la representación del tipo de dato primitivo que podrá
+   * soportar el <i>command</i> de NetLogo. Este es heredado por la clase
+   * ClipsCommandReporter pero al ser un <i>command</i> T debe ser Void.
    */
   public static class ClipsCommand<T> extends ClipsCommandReporter<T> implements Command {
 
+    /**
+     * Getter de la sintaxis del <i>command</i>.
+     * @return La sintaxis que usa.
+     */
     @Override
     public Syntax getSyntax() {
       return this.syntax;
     }
 
+    /**
+     * Realiza la ejecución del método de CLIPS, que a su vez implementa la
+     * función o procedimiento de la librería de CLIPS.
+     * 
+     * @param args Lista de los parámetros necesarios para ejecutar el
+     * <i>command</i> de Netlogo que se vincula a la funcionalidad de CLIPS.
+     * @param context El contexto del proceso de NetLogo.
+     * @throws ExtensionException
+     */
     @Override
     public void perform(Argument[] args, Context context) throws ExtensionException {
       String envId = getEnvId(args);
@@ -85,15 +156,32 @@ public class Clips {
   }
 
   /**
-   * ClipsReporter
+   * Clase interna para definir un <i>reporter<i> de NetLogo de tipo <b>T</b>.
+   * La mayor diferencia entre un <i>command</i> y un <i>reporter</i> es que el
+   * <i>reporter</i> debe retornar un valor.
+   * 
+   * @param <T> T es la representación del tipo de dato primitivo que podrá
+   * soportar el <i>reporter</i> de NetLogo.
    */
   public static class ClipsReporter<T> extends ClipsCommandReporter<T> implements Reporter {
 
+    /**
+     * Getter de la sintaxis del <i>reporter</i>.
+     * @return La sintaxis que usa.
+     */
     @Override
     public Syntax getSyntax() {
       return this.syntax;
     }
 
+    /**
+     * 
+     * @param args Lista de los parámetros necesarios para ejecutar el
+     * <i>reporter</i> de Netlogo que se vincula a la funcionalidad de CLIPS.
+     * @param context El contexto del proceso de NetLogo.
+     * @return El valor primitivo a reportar en el entorno de NetLogo.
+     * @throws ExtensionException
+     */
     @Override
     public Object report(Argument[] args, Context context) throws ExtensionException {
       String envId = getEnvId(args);
@@ -108,15 +196,33 @@ public class Clips {
   }
 
   /**
-   * CreateEnv
+   * Clase que interna que implementa el <i>command</i> que permite crear
+   * un entorno de CLIPS desde NetLogo.
    */
   public static class CreateEnv extends ClipsCommand<Void> {
 
+    
+    /**
+     * Implementación de la función que permite obtener la sintaxis del
+     * <i>command</i>.
+     * 
+     * @return La sintaxis específica del <i>command</i>. La sintaxis en este
+     * caso es: (string) -> void. Es decir que, recibe un string, que es el
+     * nombre del entorno, como parámetro y no retorna valor.
+     */
     @Override
     public Syntax getSyntax() {
       return SyntaxJ.reporterSyntax(new int[] { Syntax.StringType() }, Syntax.VoidType());
     }
 
+    /**
+     * Implementación de la ejecución del método del <i>facade</i>.
+     * 
+     * @return El método que vincula la funcionalidad de CLIPS es retornado
+     * para ser usado por el método <i>perform</i>. En este caso el método
+     * es el que permite crear un nuevo entorno de CLIPS con un string el cual
+     * será el id del entorno.
+     */
     @Override
     public ClipsMethod<Void> getClipsMethod() {
       return new ClipsMethod<Void>() {

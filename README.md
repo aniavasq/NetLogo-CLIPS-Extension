@@ -24,7 +24,7 @@ It's required to have installed JDK7 or a newer version in order to build the ex
    make
    ```
 
-4. If compilation succeeds, `clips.zip` that contains the `.jar` file and the dependencies. The `clips.zip` needs to be unzipped in the root of the NetLogo extensions directory
+4. If compilation succeeds, a `clips.zip` that contains the `.jar` file and the dependencies will be generates. The `clips.zip` needs to be unzipped in the root of the NetLogo extensions directory or any of the compatible directories that NetLogo uses for search extension, **[check here](https://ccl.northwestern.edu/netlogo/docs/extensions.html#using-extensions)**.
 
    ```
    unzip clips.zip -d /path/to/NetLogo/extension/directory
