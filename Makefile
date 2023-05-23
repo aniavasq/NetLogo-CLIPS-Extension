@@ -3,11 +3,12 @@ ifeq ($(origin JAVA_HOME), undefined)
 endif
 
 ifeq ($(origin NETLOGO), undefined)
-  NETLOGO=/Applications/NetLogo 6.1.1/Java# Mac Directory
+  #NETLOGO=/Applications/NetLogo 6.3.0/Java# Mac Directory
+  NETLOGO=$(HOME)/Applications/NetLogo 6.3.0/lib/app# Linux Directory
 endif
 
 ifeq ($(origin JARSPATH), undefined)
-  JARSPATH=lib/*
+  JARSPATH=/*
 endif
 
 ifneq (,$(findstring CYGWIN,$(shell uname -s)))
@@ -26,17 +27,19 @@ JAVAC=$(JAVA_HOME)/bin/javac
 SRCS=$(shell find . -name "*.java")
 
 clips.jar clips.jar.pack.gz: $(SRCS) manifest.txt Makefile $(JARS)
+	echo "$(NETLOGO)"
 	mkdir -p classes
 	$(JAVAC) -cp "$(JARSPATH)$(COLON)$(NETLOGO)/*" -d classes $(shell find . -name "*.java")
 	jar cmf manifest.txt clips.jar -C classes .
-	pack200 --modification-time=latest --effort=9 --strip-debug --no-keep-file-order --unknown-attribute=strip clips.jar.pack.gz clips.jar
+	#pack200 --modification-time=latest --effort=9 --strip-debug --no-keep-file-order --unknown-attribute=strip clips.jar.pack.gz clips.jar
 	# Crear zip
 	$(MAKE) clips.zip
 
 clips.zip:
 	rm -rf clips
 	mkdir clips
-	cp -rp clips.jar clips.jar.pack.gz README.md LICENSE CLIPSJNI clips
+	#cp -rp clips.jar clips.jar.pack.gz README.md LICENSE CLIPSJNI clips
+	cp -rp clips.jar README.md LICENSE CLIPSJNI/* clips
 	zip -rv clips.zip clips
 	rm -rf clips
 
@@ -45,11 +48,12 @@ clips$(VERSION).zip:
 	mkdir clips$(VERSION)
 	$(MAKE) clips.jar
 	mv clips.jar clips$(VERSION).jar
-	cp -rp clips$(VERSION).jar CLIPSJNI clips$(VERSION)
+	cp -rp clips$(VERSION).jar CLIPSJNI/* clips$(VERSION)
 	zip -rv clips$(VERSION).zip clips$(VERSION)
 	rm -rf clips$(VERSION)
 
 
 .PHONY : clean
 clean:
-	rm clips.jar clips.jar.pack.gz clips.zip
+	#rm clips.jar clips.jar.pack.gz clips.zip
+	rm clips.jar clips.zip

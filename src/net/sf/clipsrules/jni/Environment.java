@@ -60,7 +60,7 @@ public class Environment {
 
     try {
       String jarDir = new File(Environment.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent();
-      File jniLib = new File(jarDir + "/CLIPSJNI/" + libName);
+      File jniLib = new File(jarDir + File.separator + libName);
       System.load(jniLib.getAbsolutePath());
     } catch (URISyntaxException e) {
       e.printStackTrace();
